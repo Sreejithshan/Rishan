@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#2D2D44"/>
+<title>Admin Panel · Rishan's App</title>
+<style>
+  :root {
+    --primary:#6C63FF; --secondary:#FF6B9D; --accent:#FFD93D;
+    --green:#4CAF50; --orange:#FF9800; --red:#F44336;
+    --bg:#F0EFFF; --card:#fff; --text:#2D2D44; --muted:#7B7B9A;
+    --radius:16px; --shadow:0 4px 20px rgba(108,99,255,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#1A1A2E;color:#fff;min-height:100vh;}
+
+  /* PIN SCREEN */
+  #pin-screen{
+    position:fixed;inset:0;background:linear-gradient(135deg,#1A1A2E,#16213E);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:999;padding:24px;
+  }
+  .pin-logo{font-size:64px;margin-bottom:12px;}
+  .pin-title{font-size:24px;font-weight:800;margin-bottom:4px;}
+  .pin-sub{font-size:13px;opacity:0.6;margin-bottom:32px;}
+  .pin-dots{display:flex;gap:14px;margin-bottom:32px;}
+  .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);transition:all 0.2s;}
+  .pin-dot.filled{background:var(--accent);border-color:var(--accent);}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;width:100%;}
+  .pin-key{
+    padding:18px;border-radius:16px;border:none;
+    background:rgba(255,255,255,0.1);color:white;font-size:20px;font-weight:700;
+    cursor:pointer;transition:all 0.15s;backdrop-filter:blur(10px);
+  }
+  .pin-key:active{background:var(--primary);transform:scale(0.94);}
+  .pin-key.del{background:rgba(255,100,100,0.2);}
+  .pin-error{color:#FF6B9D;font-size:13px;margin-top:12px;font-weight:600;min-height:20px;}
+
+  /* MAIN ADMIN */
+  #admin-main{display:none;}
+  .admin-header{
+    background:linear-gradient(135deg,#6C63FF,#9C27B0);
+    padding:20px 20px 24px; padding-top:calc(20px + env(safe-area-inset-top));
+  }
+  .admin-header-row{display:flex;align-items:center;justify-content:space-between;}
+  .admin-title{font-size:22px;font-weight:800;}
+  .admin-sub{font-size:12px;opacity:0.7;margin-top:2px;}
+  .back-btn{background:rgba(255,255,255,0.2);border:none;color:white;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+
+  .content{max-width:700px;margin:0 auto;padding:16px;}
+
+  /* SECTION TABS */
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:20px;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex-shrink:0;padding:10px 18px;border-radius:50px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);transition:all 0.2s;}
+  .tab.active{background:var(--primary);color:white;box-shadow:0 4px 16px rgba(108,99,255,0.4);}
+
+  /* PANELS */
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadeIn 0.3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .card{background:rgba(255,255,255,0.07);border-radius:var(--radius);padding:18px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.1);}
+  .card-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+
+  label{font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);margin-bottom:5px;display:block;margin-top:12px;}
+  input,select,textarea{
+    width:100%;padding:11px 13px;border:1.5px solid rgba(255,255,255,0.15);
+    border-radius:11px;font-size:14px;background:rgba(255,255,255,0.08);
+    color:white;font-family:inherit;outline:none;transition:border-color 0.2s;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--primary);}
+  input::placeholder{color:rgba(255,255,255,0.3);}
+  select option{background:#1A1A2E;color:white;}
+  textarea{resize:vertical;min-height:80px;}
+
+  .btn{padding:12px 20px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .btn-primary{background:var(--primary);color:white;width:100%;padding:14px;margin-top:16px;}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-sm{padding:7px 14px;font-size:12px;border-radius:8px;}
+  .btn-danger{background:rgba(244,67,54,0.2);color:#FF6B6B;border:1px solid rgba(244,67,54,0.3);}
+  .btn-success{background:rgba(76,175,80,0.2);color:#81C784;border:1px solid rgba(76,175,80,0.3);}
+
+  /* TABLE */
+  .data-row{
+    display:flex;align-items:center;gap:10px;padding:10px 0;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  .data-row:last-child{border-bottom:none;}
+  .data-info{flex:1;}
+  .data-name{font-size:14px;font-weight:700;}
+  .data-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;}
+
+  /* PERIOD EDITOR */
+  .period-edit{
+    display:flex;gap:8px;align-items:flex-start;padding:10px;
+    background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;
+  }
+  .period-edit input{margin:0;padding:8px 10px;font-size:13px;}
+  .pe-num{width:28px;height:28px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:6px;}
+
+  /* BADGE TOGGLE */
+  .badge-admin{
+    display:flex;align-items:center;gap:12px;padding:10px;
+    background:rgba(255,255,255,0.05);border-radius:12px;margin-bottom:8px;
+  }
+  .badge-icon-big{font-size:28px;flex-shrink:0;}
+  .badge-admin-info{flex:1;}
+  .badge-toggle{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,0.2);cursor:pointer;position:relative;transition:background 0.2s;border:none;flex-shrink:0;}
+  .badge-toggle.on{background:var(--green);}
+  .badge-toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:left 0.2s;}
+  .badge-toggle.on::after{left:23px;}
+
+  /* TOAST */
+  #toast{
+    position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+    background:rgba(76,175,80,0.9);color:white;padding:12px 24px;border-radius:12px;
+    font-size:14px;font-weight:700;z-index:9999;transition:transform 0.4s;backdrop-filter:blur(8px);
+    white-space:nowrap;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0);}
+
+  .section-sep{height:1px;background:rgba(255,255,255,0.08);margin:16px 0;}
+
+  .color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .color-swatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:all 0.15s;}
+  .color-swatch.selected{border-color:white;transform:scale(1.1);}
+
+  .day-edit-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;}
+  .det{padding:6px 14px;border-radius:20px;border:none;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;cursor:pointer;}
+  .det.active{background:var(--primary);color:white;}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-logo">🔐</div>
+  <div class="pin-title">Admin Panel</div>
+  <div class="pin-sub">Enter PIN to continue</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pressPin('1')">1</button>
+    <button class="pin-key" onclick="pressPin('2')">2</button>
+    <button class="pin-key" onclick="pressPin('3')">3</button>
+    <button class="pin-key" onclick="pressPin('4')">4</button>
+    <button class="pin-key" onclick="pressPin('5')">5</button>
+    <button class="pin-key" onclick="pressPin('6')">6</button>
+    <button class="pin-key" onclick="pressPin('7')">7</button>
+    <button class="pin-key" onclick="pressPin('8')">8</button>
+    <button class="pin-key" onclick="pressPin('9')">9</button>
+    <button class="pin-key" onclick="pressPin('0')" style="grid-column:2">0</button>
+    <button class="pin-key del" onclick="deletePin()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <div style="margin-top:20px;font-size:12px;opacity:0.4">Default PIN: 1234 · Change it in Settings</div>
+</div>
+
+<!-- ADMIN MAIN -->
+<div id="admin-main">
+  <div class="admin-header">
+    <div class="admin-header-row">
+      <div>
+        <div class="admin-title">⚙️ Admin Panel</div>
+        <div class="admin-sub">Rishan Sreejith · Grade 2</div>
+      </div>
+      <a href="index.html" class="back-btn">← App</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('grades')">📊 Grades</button>
+      <button class="tab" onclick="showTab('timetable')">📅 Timetable</button>
+      <button class="tab" onclick="showTab('badges')">🏆 Badges</button>
+      <button class="tab" onclick="showTab('attendance')">✅ Attendance</button>
+      <button class="tab" onclick="showTab('profile')">👤 Profile</button>
+      <button class="tab" onclick="showTab('settings')">🔧 Settings</button>
+    </div>
+
+    <!-- GRADES -->
+    <div class="panel active" id="panel-grades">
+      <div class="card">
+        <div class="card-title">📊 Subject Grades</div>
+        <div id="grades-edit-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ Add / Update Grade</div>
+        <label>Subject Name</label>
+        <input id="g-subject" placeholder="e.g. Mathematics"/>
+        <label>Score</label>
+        <input id="g-score" type="number" placeholder="e.g. 92" min="0" max="100"/>
+        <label>Max Score</label>
+        <input id="g-max" type="number" placeholder="e.g. 100" value="100" min="1"/>
+        <button class="btn btn-primary" onclick="saveGrade()">💾 Save Grade</button>
+      </div>
+    </div>
+
+    <!-- TIMETABLE -->
+    <div class="panel" id="panel-timetable">
+      <div class="card">
+        <div class="card-title">📅 Edit Timetable</div>
+        <div class="day-edit-tabs" id="day-edit-tabs">
+          <button class="det active" onclick="switchTTDay(0,this)">Mon</button>
+          <button class="det" onclick="switchTTDay(1,this)">Tue</button>
+          <button class="det" onclick="switchTTDay(2,this)">Wed</button>
+          <button class="det" onclick="switchTTDay(3,this)">Thu</button>
+          <button class="det" onclick="switchTTDay(4,this)">Fri</button>
+        </div>
+        <div id="tt-period-list"></div>
+        <button class="btn btn-success btn-sm" onclick="addPeriod()" style="width:100%;margin-top:10px">+ Add Period</button>
+      </div>
+      <button class="btn btn-primary" onclick="saveTimetable()">💾 Save Timetable</button>
+    </div>
+
+    <!-- BADGES -->
+    <div class="panel" id="panel-badges">
+      <div class="card">
+        <div class="card-title">🏆 Achievement Badges</div>
+        <div id="badges-edit-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ Add New Badge</div>
+        <label>Emoji Icon</label>
+        <input id="b-icon" placeholder="e.g. 🌟" maxlength="4"/>
+        <label>Badge Name</label>
+        <input id="b-name" placeholder="e.g. Science Star"/>
+        <label>Date Earned (leave blank if locked)</label>
+        <input id="b-date" type="date"/>
+        <button class="btn btn-primary" onclick="addBadge()">🏆 Add Badge</button>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="panel" id="panel-attendance">
+      <div class="card">
+        <div class="card-title">✅ Attendance Numbers</div>
+        <label>Days Present</label>
+        <input id="att-p" type="number" min="0" placeholder="0"/>
+        <label>Days Absent</label>
+        <input id="att-a" type="number" min="0" placeholder="0"/>
+        <label>Days Late</label>
+        <input id="att-l" type="number" min="0" placeholder="0"/>
+        <button class="btn btn-primary" onclick="saveAttendance()">💾 Save Attendance</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📆 Monthly Records</div>
+        <div id="att-months-list"></div>
+        <div class="section-sep"></div>
+        <label>Month Label (e.g. January)</label>
+        <input id="am-label" placeholder="January"/>
+        <label>Number of Days</label>
+        <input id="am-days" type="number" min="0" placeholder="20"/>
+        <label>Status</label>
+        <select id="am-type">
+          <option value="present">Present</option>
+          <option value="absent">Absent</option>
+          <option value="late">Late</option>
+        </select>
+        <button class="btn btn-primary" onclick="addAttMonth()">+ Add Month Record</button>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="panel" id="panel-profile">
+      <div class="card">
+        <div class="card-title">👤 Student Details</div>
+        <label>Student ID</label>
+        <input id="pr-id" placeholder="GMS2024-001"/>
+        <label>Date of Birth</label>
+        <input id="pr-dob" type="date"/>
+        <label>Home Address</label>
+        <input id="pr-addr" placeholder="Dubai, UAE"/>
+        <label>Blood Group</label>
+        <select id="pr-blood">
+          <option value="">Select...</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+        <label>Parent Phone</label>
+        <input id="pr-phone" type="tel" placeholder="+971-XX-XXX-XXXX"/>
+      </div>
+      <div class="card">
+        <div class="card-title">🏫 School Details</div>
+        <label>Class Teacher Name</label>
+        <input id="pr-teacher" placeholder="e.g. Ms. Priya"/>
+        <label>Bus Route</label>
+        <input id="pr-bus" placeholder="e.g. Route 7B"/>
+      </div>
+      <button class="btn btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="card">
+        <div class="card-title">🔐 Change Admin PIN</div>
+        <label>New PIN (4 digits)</label>
+        <input id="new-pin" type="password" maxlength="4" placeholder="4 digit PIN" inputmode="numeric"/>
+        <label>Confirm PIN</label>
+        <input id="confirm-pin" type="password" maxlength="4" placeholder="Repeat PIN" inputmode="numeric"/>
+        <button class="btn btn-primary" onclick="changePin()">🔐 Update PIN</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🗑️ Danger Zone</div>
+        <button class="btn btn-danger btn-sm" style="width:100%;padding:12px" onclick="resetAll()">Reset All Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">✅ Saved!</div>
+
+<script>
+// ─── STORAGE ─────────────────────────────────────────────────
+const DB = {
+  get(k){ try{ return JSON.parse(localStorage.getItem('rishan_'+k)); }catch(e){ return null; } },
+  set(k,v){ localStorage.setItem('rishan_'+k, JSON.stringify(v)); }
+};
+
+// ─── PIN ─────────────────────────────────────────────────────
+let pinEntry = '';
+const DEFAULT_PIN = '1234';
+function getPin(){ return DB.get('admin_pin')||DEFAULT_PIN; }
+
+function pressPin(d){
+  if(pinEntry.length>=4) return;
+  pinEntry += d;
+  updateDots();
+  if(pinEntry.length===4) checkPin();
+}
+function deletePin(){
+  pinEntry = pinEntry.slice(0,-1);
+  updateDots();
+  document.getElementById('pin-error').textContent='';
+}
+function updateDots(){
+  for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled',i<pinEntry.length);
+}
+function checkPin(){
+  if(pinEntry===getPin()){
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('admin-main').style.display='block';
+    loadAll();
+  } else {
+    document.getElementById('pin-error').textContent='Wrong PIN! Try again.';
+    pinEntry='';
+    setTimeout(()=>{ updateDots(); },300);
+  }
+}
+
+// ─── TABS ─────────────────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='grades') loadGradesEdit();
+  if(name==='timetable'){ currentTTDay=0; loadTTEdit(0); }
+  if(name==='badges') loadBadgesEdit();
+  if(name==='attendance') loadAttEdit();
+  if(name==='profile') loadProfileEdit();
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+function toast(msg='✅ Saved!'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ─── GRADES ───────────────────────────────────────────────────
+function loadGradesEdit(){
+  const grades = DB.get('grades')||[];
+  const el = document.getElementById('grades-edit-list');
+  if(!grades.length){ el.innerHTML='<p style="color:rgba(255,255,255,0.4);font-size:13px">No grades yet.</p>'; return; }
+  el.innerHTML = grades.map((g,i)=>`
+    <div class="data-row">
+      <div class="data-info">
+        <div class="data-name">${g.subject}</div>
+        <div class="data-sub">${g.score}/${g.max} = ${Math.round(g.score/g.max*100)}%</div>
+      </div>
+      <button class="btn btn-sm" onclick="editGrade(${i})" style="background:rgba(108,99,255,0.3);color:var(--primary-light);margin-right:6px;border:1px solid rgba(108,99,255,0.4);">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteGrade(${i})">✕</button>
+    </div>`).join('');
+}
+function saveGrade(){
+  const subject = document.getElementById('g-subject').value.trim();
+  const score   = parseInt(document.getElementById('g-score').value)||0;
+  const max     = parseInt(document.getElementById('g-max').value)||100;
+  if(!subject) return;
+  const grades = DB.get('grades')||[];
+  const idx = grades.findIndex(g=>g.subject.toLowerCase()===subject.toLowerCase());
+  if(idx>=0) grades[idx]={subject,score,max};
+  else grades.push({subject,score,max});
+  DB.set('grades',grades);
+  loadGradesEdit();
+  document.getElementById('g-subject').value='';
+  document.getElementById('g-score').value='';
+  document.getElementById('g-max').value='100';
+  toast('✅ Grade saved!');
+}
+function editGrade(i){
+  const g = (DB.get('grades')||[])[i];
+  if(!g) return;
+  document.getElementById('g-subject').value=g.subject;
+  document.getElementById('g-score').value=g.score;
+  document.getElementById('g-max').value=g.max;
+  document.getElementById('g-subject').focus();
+}
+function deleteGrade(i){
+  if(!confirm('Delete this grade?')) return;
+  const grades = DB.get('grades')||[];
+  grades.splice(i,1); DB.set('grades',grades); loadGradesEdit(); toast('🗑️ Deleted');
+}
+
+// ─── TIMETABLE ────────────────────────────────────────────────
+let currentTTDay = 0;
+const subjectColors = ['#6C63FF','#FF6B9D','#FFD93D','#00BCD4','#FF9800','#9C27B0','#4CAF50','#2196F3','#FF5722','#607D8B','#E91E63','#795548'];
+const subjectIcons = {'English':'📖','Mathematics':'🔢','Science':'🔬','Hindi':'🇮🇳','Social Studies':'🌍','Art':'🎨','Art & Craft':'🎨','Physical Education':'⚽','Computer':'💻','Music':'🎵','Break':'🍎','Lunch':'🍱','Library':'📚','Moral Science':'🌟'};
+
+function switchTTDay(d, btn){
+  currentTTDay=d;
+  document.querySelectorAll('.det').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadTTEdit(d);
+}
+function loadTTEdit(d){
+  const tt = DB.get('timetable')||{};
+  const periods = tt[d]||[];
+  const el = document.getElementById('tt-period-list');
+  el.innerHTML = periods.map((p,i)=>`
+    <div class="period-edit">
+      <div class="pe-num">${i+1}</div>
+      <div style="flex:1">
+        <input value="${p.subject}" id="ps-${i}" placeholder="Subject" oninput="autoFillPeriod(${i})"/>
+        <input value="${p.time}" id="pt-${i}" placeholder="e.g. 8:00 - 8:45" style="margin-top:6px"/>
+        <input value="${p.icon}" id="pi-${i}" placeholder="Icon emoji" style="margin-top:6px;width:80px"/>
+      </div>
+      <button onclick="removePeriod(${i})" style="background:rgba(255,100,100,0.2);border:none;color:#FF6B9D;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;align-self:flex-start;margin-top:4px">✕</button>
+    </div>`).join('');
+}
+function autoFillPeriod(i){
+  const s = document.getElementById('ps-'+i).value.trim();
+  const icon = subjectIcons[s]||'📚';
+  document.getElementById('pi-'+i).value=icon;
+}
+function addPeriod(){
+  const tt = DB.get('timetable')||{};
+  if(!tt[currentTTDay]) tt[currentTTDay]=[];
+  tt[currentTTDay].push({subject:'New Subject',time:'—',icon:'📚',color:subjectColors[tt[currentTTDay].length%subjectColors.length]});
+  DB.set('timetable',tt);
+  loadTTEdit(currentTTDay);
+}
+function removePeriod(i){
+  const tt = DB.get('timetable')||{};
+  (tt[currentTTDay]||[]).splice(i,1);
+  DB.set('timetable',tt);
+  loadTTEdit(currentTTDay);
+}
+function saveTimetable(){
+  const tt = DB.get('timetable')||{};
+  const periods = tt[currentTTDay]||[];
+  periods.forEach((_,i)=>{
+    const s = document.getElementById('ps-'+i);
+    const t = document.getElementById('pt-'+i);
+    const ic = document.getElementById('pi-'+i);
+    if(s) periods[i].subject=s.value;
+    if(t) periods[i].time=t.value;
+    if(ic) periods[i].icon=ic.value||'📚';
+    periods[i].color = subjectColors[i%subjectColors.length];
+  });
+  tt[currentTTDay]=periods;
+  DB.set('timetable',tt);
+  toast('📅 Timetable saved!');
+}
+
+// ─── BADGES ───────────────────────────────────────────────────
+function loadBadgesEdit(){
+  const badges = DB.get('badges')||[];
+  document.getElementById('badges-edit-list').innerHTML = badges.map((b,i)=>`
+    <div class="badge-admin">
+      <div class="badge-icon-big">${b.icon}</div>
+      <div class="badge-admin-info">
+        <div style="font-size:14px;font-weight:700">${b.name}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5)">${b.earned?'Earned: '+b.date:'Locked'}</div>
+      </div>
+      <button class="badge-toggle ${b.earned?'on':''}" onclick="toggleBadge(${i})"></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteBadge(${i})">✕</button>
+    </div>`).join('');
+}
+function toggleBadge(i){
+  const badges = DB.get('badges')||[];
+  badges[i].earned=!badges[i].earned;
+  if(badges[i].earned&&!badges[i].date) badges[i].date=new Date().toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+  else if(!badges[i].earned) badges[i].date='';
+  DB.set('badges',badges);
+  loadBadgesEdit();
+  toast(badges[i].earned?'🏆 Badge unlocked!':'🔒 Badge locked');
+}
+function deleteBadge(i){
+  if(!confirm('Delete badge?')) return;
+  const badges=DB.get('badges')||[];
+  badges.splice(i,1); DB.set('badges',badges); loadBadgesEdit();
+}
+function addBadge(){
+  const icon=document.getElementById('b-icon').value.trim()||'⭐';
+  const name=document.getElementById('b-name').value.trim();
+  const date=document.getElementById('b-date').value;
+  if(!name) return;
+  const badges=DB.get('badges')||[];
+  const dateStr = date ? new Date(date).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '';
+  badges.push({icon,name,date:dateStr,earned:!!date});
+  DB.set('badges',badges);
+  loadBadgesEdit();
+  document.getElementById('b-icon').value='';
+  document.getElementById('b-name').value='';
+  document.getElementById('b-date').value='';
+  toast('🏆 Badge added!');
+}
+
+// ─── ATTENDANCE ────────────────────────────────────────────────
+function loadAttEdit(){
+  const att=DB.get('attendance')||{present:0,absent:0,late:0,months:[]};
+  document.getElementById('att-p').value=att.present;
+  document.getElementById('att-a').value=att.absent;
+  document.getElementById('att-l').value=att.late;
+  const months=att.months||[];
+  document.getElementById('att-months-list').innerHTML=months.length
+    ? months.map((m,i)=>`<div class="data-row"><div class="data-info"><div class="data-name">${m.label}</div><div class="data-sub">${m.days} days · ${m.type}</div></div><button class="btn btn-danger btn-sm" onclick="deleteAttMonth(${i})">✕</button></div>`).join('')
+    : '<p style="color:rgba(255,255,255,0.4);font-size:13px">No records.</p>';
+}
+function saveAttendance(){
+  const att=DB.get('attendance')||{months:[]};
+  att.present=parseInt(document.getElementById('att-p').value)||0;
+  att.absent=parseInt(document.getElementById('att-a').value)||0;
+  att.late=parseInt(document.getElementById('att-l').value)||0;
+  DB.set('attendance',att);
+  toast('✅ Attendance saved!');
+}
+function addAttMonth(){
+  const label=document.getElementById('am-label').value.trim();
+  const days=parseInt(document.getElementById('am-days').value)||0;
+  const type=document.getElementById('am-type').value;
+  if(!label) return;
+  const att=DB.get('attendance')||{present:0,absent:0,late:0,months:[]};
+  if(!att.months) att.months=[];
+  att.months.push({label,days,type});
+  DB.set('attendance',att);
+  loadAttEdit();
+  document.getElementById('am-label').value='';
+  document.getElementById('am-days').value='';
+  toast('📅 Month added!');
+}
+function deleteAttMonth(i){
+  const att=DB.get('attendance')||{months:[]};
+  att.months.splice(i,1);
+  DB.set('attendance',att);
+  loadAttEdit();
+}
+
+// ─── PROFILE ──────────────────────────────────────────────────
+function loadProfileEdit(){
+  const p=DB.get('profile')||{};
+  if(p.id) document.getElementById('pr-id').value=p.id;
+  if(p.dob) document.getElementById('pr-dob').value=p.dob;
+  if(p.address) document.getElementById('pr-addr').value=p.address;
+  if(p.blood) document.getElementById('pr-blood').value=p.blood;
+  if(p.phone) document.getElementById('pr-phone').value=p.phone;
+  if(p.teacher) document.getElementById('pr-teacher').value=p.teacher;
+  if(p.bus) document.getElementById('pr-bus').value=p.bus;
+}
+function saveProfile(){
+  DB.set('profile',{
+    id:document.getElementById('pr-id').value,
+    dob:document.getElementById('pr-dob').value,
+    address:document.getElementById('pr-addr').value,
+    blood:document.getElementById('pr-blood').value,
+    phone:document.getElementById('pr-phone').value,
+    teacher:document.getElementById('pr-teacher').value,
+    bus:document.getElementById('pr-bus').value
+  });
+  toast('👤 Profile saved!');
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────
+function changePin(){
+  const np=document.getElementById('new-pin').value;
+  const cp=document.getElementById('confirm-pin').value;
+  if(np.length!==4||!/^\d{4}$/.test(np)){ alert('PIN must be exactly 4 digits!'); return; }
+  if(np!==cp){ alert('PINs do not match!'); return; }
+  DB.set('admin_pin',np);
+  document.getElementById('new-pin').value='';
+  document.getElementById('confirm-pin').value='';
+  toast('🔐 PIN changed!');
+}
+function resetAll(){
+  if(!confirm('Reset ALL data? This cannot be undone!')) return;
+  const pin=DB.get('admin_pin')||'1234';
+  ['timetable','grades','badges','homework','attendance','profile'].forEach(k=>localStorage.removeItem('rishan_'+k));
+  DB.set('admin_pin',pin);
+  toast('🔄 Data reset!');
+  setTimeout(()=>location.reload(),1500);
+}
+
+// ─── LOAD ALL ─────────────────────────────────────────────────
+function loadAll(){ loadGradesEdit(); }
+</script>
+</body>
+</html>
