@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#4F46E5"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Rishan"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<title>Rishan's School App</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root{
+  --P:#4F46E5; --PD:#3730A3; --PL:#818CF8; --PLT:rgba(79,70,229,.1);
+  --rose:#F43F5E;   --roseL:#FFF1F2; --roseD:#BE123C;
+  --amber:#F59E0B;  --amberL:#FFFBEB;
+  --green:#10B981;  --greenL:#ECFDF5; --greenD:#047857;
+  --sky:#0EA5E9;    --skyL:#F0F9FF;
+  --violet:#8B5CF6; --violetL:#F5F3FF;
+  --orange:#F97316; --orangeL:#FFF7ED;
+
+  --s50:#F8FAFC; --s100:#F1F5F9; --s200:#E2E8F0;
+  --s300:#CBD5E1; --s400:#94A3B8; --s500:#64748B;
+  --s600:#475569; --s700:#334155; --s800:#1E293B; --s900:#0F172A;
+  --white:#FFFFFF;
+
+  --r4:4px; --r8:8px; --r12:12px; --r16:16px; --r20:20px; --r24:24px;
+  --sh0:0 1px 2px rgba(0,0,0,.06);
+  --sh1:0 2px 8px rgba(0,0,0,.08);
+  --sh2:0 4px 16px rgba(0,0,0,.10);
+  --sh3:0 8px 32px rgba(0,0,0,.12);
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+
+/* ── RESET ──────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  font-family:-apple-system,"SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif;
+  background:var(--s100); color:var(--s800);
+  min-height:100dvh; overflow-x:hidden;
+  padding-bottom:calc(24px + var(--safe-b));
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;padding:0}
+input,select,textarea{font-family:inherit}
+img{display:block;max-width:100%}
+
+/* ── TYPOGRAPHY ─────────────────────────────────────────── */
+.t-xs{font-size:11px;line-height:1.4}
+.t-sm{font-size:13px;line-height:1.5}
+.t-base{font-size:14px;line-height:1.5}
+.t-lg{font-size:16px;line-height:1.4}
+.t-xl{font-size:20px;line-height:1.3}
+.t-2xl{font-size:24px;line-height:1.2}
+.w5{font-weight:500}.w6{font-weight:600}.w7{font-weight:700}.w8{font-weight:800}.w9{font-weight:900}
+.muted{color:var(--s400)}
+.truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.screen{display:none;min-height:100dvh;flex-direction:column}
+.screen.active{display:flex;animation:fadeSlide .25s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.scroll-body{flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%}
+
+/* ── HEADER ──────────────────────────────────────────────── */
+.app-bar{
+  background:linear-gradient(135deg,var(--P) 0%,#7C3AED 100%);
+  padding:16px 20px 18px;
+  padding-top:calc(14px + var(--safe-t));
+  box-shadow:0 4px 20px rgba(79,70,229,.3);
+  position:sticky;top:0;z-index:50;flex-shrink:0;
+}
+.app-bar-inner{display:flex;align-items:center;gap:12px}
+.app-bar-back{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;flex-shrink:0;
+  transition:background .15s;
+}
+.app-bar-back:active{background:rgba(255,255,255,.3)}
+.app-bar-content{flex:1;min-width:0}
+.app-bar-greeting{font-size:12px;color:rgba(255,255,255,.7);font-weight:500;letter-spacing:.2px}
+.app-bar-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;truncate}
+.app-bar-sub{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:4px;padding:3px 10px;
+  background:rgba(255,255,255,.16);border-radius:20px;
+  font-size:11px;font-weight:700;color:#fff;letter-spacing:.3px;
+}
+.app-bar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.avatar-btn{
+  width:42px;height:42px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.15);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;transition:transform .15s;flex-shrink:0;
+}
+.avatar-btn:active{transform:scale(.92)}
+.avatar-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.icon-btn{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;transition:background .15s;
+}
+.icon-btn:active{background:rgba(255,255,255,.3)}
+
+/* ── CARD ────────────────────────────────────────────────── */
+.card{background:var(--white);border-radius:var(--r16);box-shadow:var(--sh1);overflow:hidden}
+.card+.card{margin-top:12px}
+.card-pad{padding:18px}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--s100);
+}
+.card-header-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--s500);text-transform:uppercase;letter-spacing:.8px}
+.section-label{font-size:11px;font-weight:700;color:var(--s400);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding:0 2px}
+
+/* ── HOME MENU GRID ──────────────────────────────────────── */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.menu-tile{
+  background:var(--white);border-radius:var(--r16);
+  padding:16px 12px 14px;display:flex;flex-direction:column;
+  align-items:center;text-align:center;gap:6px;
+  box-shadow:var(--sh1);border:1.5px solid transparent;
+  transition:transform .15s,box-shadow .15s,border-color .15s;
+  position:relative;overflow:hidden;
+}
+.menu-tile:active{transform:scale(.95);box-shadow:var(--sh0)}
+.menu-tile-icon{font-size:26px;line-height:1}
+.menu-tile-label{font-size:12px;font-weight:700;color:var(--s700);letter-spacing:.1px}
+.menu-tile-count{
+  position:absolute;top:8px;right:8px;
+  min-width:18px;height:18px;padding:0 5px;
+  border-radius:9px;font-size:10px;font-weight:800;
+  background:var(--rose);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.menu-tile-count.show{opacity:1}
+.tile-p{border-top:3px solid var(--P)}
+.tile-t{border-top:3px solid var(--amber)}
+.tile-g{border-top:3px solid var(--rose)}
+.tile-h{border-top:3px solid var(--green)}
+.tile-d{border-top:3px solid var(--violet)}
+
+/* ── HOME BANNER ─────────────────────────────────────────── */
+.home-banner{
+  background:linear-gradient(135deg,var(--P),#7C3AED);
+  border-radius:var(--r16);padding:20px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.home-banner::before{
+  content:'';position:absolute;right:-24px;top:-24px;
+  width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08)
+}
+.home-banner::after{
+  content:'';position:absolute;left:40%;bottom:-32px;
+  width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.06)
+}
+.banner-quote{font-size:14px;font-weight:700;color:#fff;line-height:1.5;position:relative;z-index:1}
+.banner-label{font-size:11px;color:rgba(255,255,255,.6);font-weight:600;margin-top:6px;position:relative;z-index:1}
+
+/* ── TODAY STRIP ─────────────────────────────────────────── */
+.today-strip{background:var(--white);border-radius:var(--r16);box-shadow:var(--sh1);overflow:hidden;margin-bottom:14px}
+.today-strip-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:linear-gradient(90deg,var(--greenL),rgba(236,253,245,0));
+  border-bottom:1px solid var(--s100);
+}
+.today-strip-title{font-size:13px;font-weight:700;color:var(--greenD);display:flex;align-items:center;gap:6px}
+.today-slot{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--s100)}
+.today-slot:last-child{border-bottom:none}
+.ts-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ts-time{font-size:11px;color:var(--s400);font-weight:600;min-width:56px;flex-shrink:0}
+.ts-sub{font-size:14px;font-weight:700;flex:1}
+.ts-icon{font-size:16px}
+
+/* ── LIST ROWS ────────────────────────────────────────────── */
+.list-row{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 18px;border-bottom:1px solid var(--s100);
+}
+.list-row:last-child{border-bottom:none}
+.list-icon{
+  width:38px;height:38px;border-radius:var(--r12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex-shrink:0;
+}
+.list-body{flex:1;min-width:0}
+.list-title{font-size:14px;font-weight:700;truncate}
+.list-sub{font-size:12px;color:var(--s400);margin-top:2px}
+.list-end{display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+/* ── GRADES ──────────────────────────────────────────────── */
+.grade-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--s100)}
+.grade-row:last-child{border-bottom:none}
+.grade-badge{
+  width:46px;height:46px;border-radius:var(--r12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:900;color:#fff;flex-shrink:0;
+}
+.grade-info{flex:1;min-width:0}
+.grade-name{font-size:14px;font-weight:700}
+.grade-score{font-size:11px;color:var(--s400);margin-top:2px}
+.grade-bar{margin-top:6px;height:5px;background:var(--s100);border-radius:4px;overflow:hidden}
+.grade-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.grade-letter{font-size:20px;font-weight:900;flex-shrink:0}
+
+/* ── TIMETABLE ────────────────────────────────────────────── */
+.day-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;margin-bottom:14px}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{
+  flex-shrink:0;padding:9px 18px;border-radius:40px;
+  font-size:13px;font-weight:700;color:var(--s500);
+  background:var(--white);box-shadow:var(--sh0);border:1.5px solid var(--s200);
+  transition:all .2s;
+}
+.day-tab.on{background:var(--P);color:#fff;border-color:var(--P);box-shadow:0 4px 12px rgba(79,70,229,.35);transform:translateY(-1px)}
+.day-tab.today-mark{border-color:var(--rose)}
+.day-tab.on.today-mark{border-color:transparent}
+
+.period-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--white);border-radius:var(--r16);padding:14px 16px;
+  margin-bottom:8px;box-shadow:var(--sh1);
+  animation:slideIn .25s ease both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.period-card:nth-child(1){animation-delay:0s}
+.period-card:nth-child(2){animation-delay:.04s}
+.period-card:nth-child(3){animation-delay:.08s}
+.period-card:nth-child(4){animation-delay:.12s}
+.period-card:nth-child(5){animation-delay:.16s}
+.period-card:nth-child(6){animation-delay:.20s}
+.period-card:nth-child(7){animation-delay:.24s}
+.period-card:nth-child(8){animation-delay:.28s}
+
+.period-num{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;color:#fff;flex-shrink:0;
+}
+.period-body{flex:1;min-width:0}
+.period-subject{font-size:14px;font-weight:700}
+.period-time{font-size:11px;color:var(--s400);margin-top:2px}
+.period-icon-el{font-size:20px;flex-shrink:0}
+.period-actions{display:flex;gap:4px;flex-shrink:0}
+.act-btn{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:background .15s;
+}
+.act-btn:active{transform:scale(.9)}
+.act-edit{background:var(--PLT);color:var(--P)}
+.act-del{background:#FFF1F2;color:var(--roseD)}
+
+/* ── HOMEWORK ─────────────────────────────────────────────── */
+.hw-card{
+  background:var(--white);border-radius:var(--r16);
+  padding:0;margin-bottom:8px;box-shadow:var(--sh1);
+  overflow:hidden;border-left:3px solid transparent;
+}
+.hw-card.s-pending{border-left-color:var(--rose)}
+.hw-card.s-progress{border-left-color:var(--amber)}
+.hw-card.s-finished{border-left-color:var(--green);opacity:.65}
+.hw-inner{padding:14px 16px}
+.hw-top{display:flex;align-items:flex-start;gap:10px}
+.hw-subject{font-size:14px;font-weight:800;flex:1}
+.hw-pill{
+  padding:3px 9px;border-radius:20px;
+  font-size:10px;font-weight:700;flex-shrink:0;
+}
+.hw-desc{font-size:13px;color:var(--s500);margin-top:5px;line-height:1.5}
+.hw-footer{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.hw-due{font-size:11px;color:var(--s400);font-weight:600}
+.hw-advance{
+  padding:4px 12px;border-radius:20px;
+  font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:inherit;
+}
+.hw-del-btn{margin-left:auto;padding:4px 8px;font-size:12px;color:var(--s400);background:var(--s100);border-radius:6px}
+
+/* ── TODO ────────────────────────────────────────────────── */
+.todo-item{
+  background:var(--white);border-radius:var(--r16);
+  padding:14px 16px;margin-bottom:8px;box-shadow:var(--sh1);
+  display:flex;align-items:flex-start;gap:12px;
+}
+.todo-check{
+  width:22px;height:22px;border-radius:7px;border:2px solid var(--s300);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;font-size:12px;
+  transition:all .2s;cursor:pointer;
+}
+.todo-check.done{background:var(--green);border-color:var(--green);color:#fff}
+.todo-body{flex:1;min-width:0}
+.todo-name{font-size:14px;font-weight:700}
+.todo-name.done{text-decoration:line-through;color:var(--s400)}
+.todo-desc{font-size:12px;color:var(--s400);margin-top:3px}
+.todo-dead{font-size:11px;color:var(--s400);font-weight:600;margin-top:5px}
+.todo-del{color:var(--s300);font-size:15px;padding:2px;flex-shrink:0}
+
+/* ── FILTER ROW ──────────────────────────────────────────── */
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;margin-bottom:12px}
+.filter-row::-webkit-scrollbar{display:none}
+.f-chip{
+  flex-shrink:0;padding:7px 16px;border-radius:20px;
+  font-size:12px;font-weight:700;border:1.5px solid var(--s200);
+  background:var(--white);color:var(--s500);transition:all .18s;
+}
+.f-chip.on{background:var(--P);color:#fff;border-color:var(--P)}
+
+/* ── FORMS ───────────────────────────────────────────────── */
+.form-field{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--s600);margin-bottom:5px}
+.form-input,
+.form-select,
+.form-textarea{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--s200);border-radius:var(--r12);
+  font-size:14px;color:var(--s800);background:var(--s50);
+  outline:none;transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--P);box-shadow:0 0 0 3px var(--PLT)
+}
+.form-textarea{resize:vertical;min-height:72px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px 20px;border-radius:var(--r12);
+  font-size:14px;font-weight:700;font-family:inherit;
+  transition:all .18s;cursor:pointer;border:none;
+}
+.btn:active{transform:scale(.97)}
+.btn-full{width:100%;padding:14px}
+.btn-primary{background:var(--P);color:#fff}
+.btn-primary:hover{background:var(--PD)}
+.btn-ghost{background:var(--s100);color:var(--s600)}
+.btn-ghost:hover{background:var(--s200)}
+.btn-danger{background:#FEF2F2;color:#DC2626}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:var(--r8)}
+.btn-row{display:flex;gap:8px;margin-top:16px}
+.btn-row .btn{flex:1}
+
+/* ── PROFILE PIC ─────────────────────────────────────────── */
+.profile-hero{
+  background:linear-gradient(135deg,var(--P),#7C3AED);
+  padding:28px 20px 24px;text-align:center;
+  border-radius:var(--r20);margin-bottom:14px;
+  box-shadow:var(--sh2);
+}
+.pp-wrap{position:relative;display:inline-block;width:88px;height:88px}
+.pp-circle{
+  width:88px;height:88px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:38px;overflow:hidden;
+}
+.pp-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pp-edit-btn{
+  position:absolute;right:0;bottom:0;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--amber);border:2px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;
+}
+.profile-name-display{font-size:20px;font-weight:800;color:#fff;margin-top:12px}
+.profile-grade-display{font-size:13px;color:rgba(255,255,255,.7);margin-top:3px}
+
+/* ── SHEET MODAL ─────────────────────────────────────────── */
+.sheet-overlay{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(15,23,42,.45);backdrop-filter:blur(4px);
+  align-items:flex-end;justify-content:center;
+}
+.sheet-overlay.open{display:flex;animation:ovIn .2s ease}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.sheet{
+  background:#fff;width:100%;max-width:540px;max-height:88dvh;
+  border-radius:24px 24px 0 0;padding:0 20px calc(20px + var(--safe-b));
+  overflow-y:auto;animation:sheetUp .3s cubic-bezier(.34,1.15,.64,1);
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--s200);border-radius:4px;margin:14px auto 18px}
+.sheet-title{font-size:17px;font-weight:800;margin-bottom:18px;color:var(--s800)}
+
+/* ── INLINE CONFIRM ───────────────────────────────────────── */
+.confirm-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#FEF2F2;border-radius:var(--r12);padding:12px 14px;margin-top:8px;
+}
+.confirm-text{font-size:13px;font-weight:600;color:#DC2626}
+.confirm-actions{display:flex;gap:8px}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:var(--s900);color:#fff;
+  padding:10px 22px;border-radius:40px;
+  font-size:13px;font-weight:600;white-space:nowrap;
+  opacity:0;transition:opacity .3s,transform .3s;
+  z-index:999;pointer-events:none;box-shadow:var(--sh3);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATE ──────────────────────────────────────────── */
+.empty{text-align:center;padding:40px 20px}
+.empty-icon{font-size:44px;margin-bottom:12px}
+.empty-text{font-size:14px;color:var(--s400);font-weight:500}
+
+/* ── UTILITY ─────────────────────────────────────────────── */
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.divider{height:1px;background:var(--s100);margin:4px 0}
+.hidden{display:none!important}
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media(min-width:600px){
+  .scroll-body{padding:20px}
+  .menu-grid{gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: HOME
+══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="s-home">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <div class="app-bar-content">
+        <div class="app-bar-greeting" id="h-greeting">Good morning ☀️</div>
+        <div class="app-bar-title" id="h-name">Rishan Sreejith</div>
+        <div class="app-bar-sub">🎓 <span id="h-grade">Grade 2</span> · GEMS Our Own Boys High School</div>
+      </div>
+      <div class="app-bar-actions">
+        <button class="avatar-btn" id="h-avatar" onclick="go('s-profile')">
+          <span id="h-av-fallback">👤</span>
+          <img id="h-av-img" src="" style="display:none"/>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-body">
+    <!-- quote -->
+    <div class="home-banner">
+      <div class="banner-quote" id="home-quote">"Be curious, be kind, be awesome!"</div>
+      <div class="banner-label">⭐ Daily Spark</div>
+    </div>
+
+    <!-- menu grid -->
+    <div class="section-label">Quick Access</div>
+    <div class="menu-grid">
+      <button class="menu-tile tile-p" onclick="go('s-profile')">
+        <div class="menu-tile-icon">👤</div>
+        <div class="menu-tile-label">Profile</div>
+      </button>
+      <button class="menu-tile tile-t" onclick="go('s-timetable')">
+        <div class="menu-tile-icon">📅</div>
+        <div class="menu-tile-label">Timetable</div>
+      </button>
+      <button class="menu-tile tile-g" onclick="go('s-grades')">
+        <div class="menu-tile-icon">📊</div>
+        <div class="menu-tile-label">Grades</div>
+        <div class="menu-tile-count" id="mc-grades">0</div>
+      </button>
+      <button class="menu-tile tile-h" onclick="go('s-homework')">
+        <div class="menu-tile-icon">📝</div>
+        <div class="menu-tile-label">Homework</div>
+        <div class="menu-tile-count" id="mc-hw">0</div>
+      </button>
+      <button class="menu-tile tile-d" onclick="go('s-todo')">
+        <div class="menu-tile-icon">✅</div>
+        <div class="menu-tile-label">To Do</div>
+        <div class="menu-tile-count" id="mc-todo">0</div>
+      </button>
+      <button class="menu-tile" style="border-top:3px solid var(--sky)" onclick="go('s-timetable')">
+        <div class="menu-tile-icon">🕐</div>
+        <div class="menu-tile-label" id="today-label">Today</div>
+      </button>
+    </div>
+
+    <!-- today classes -->
+    <div class="section-label">Today's Classes</div>
+    <div class="today-strip">
+      <div class="today-strip-head">
+        <span class="today-strip-title">📆 <span id="today-day-name">—</span></span>
+        <button class="btn btn-sm btn-ghost" onclick="go('s-timetable')" style="font-size:12px">View all</button>
+      </div>
+      <div id="home-today"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: PROFILE
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-profile">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <button class="app-bar-back" onclick="go('s-home')">←</button>
+      <div class="app-bar-content"><div class="app-bar-title">Profile</div></div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="profile-hero">
+      <div class="pp-wrap">
+        <div class="pp-circle" id="pp-circle">
+          <span id="pp-fallback">👤</span>
+          <img id="pp-img" src="" style="display:none"/>
+        </div>
+        <button class="pp-edit-btn" onclick="document.getElementById('pic-file').click()">📷</button>
+      </div>
+      <div class="profile-name-display" id="pp-name">Rishan Sreejith</div>
+      <div class="profile-grade-display" id="pp-grade">Grade 2 · GEMS Our Own Boys High School</div>
+    </div>
+    <input type="file" id="pic-file" accept="image/*" style="display:none" onchange="onPicUpload(event)"/>
+
+    <div class="card">
+      <div class="card-pad">
+        <div class="section-label" style="margin-bottom:14px">Student Details</div>
+        <div class="form-field"><label class="form-label">Student Name</label><input class="form-input" id="f-name" value="Rishan Sreejith"/></div>
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">Grade / Class</label><input class="form-input" id="f-grade" value="Grade 2"/></div>
+          <div class="form-field"><label class="form-label">Blood Group</label><select class="form-select" id="f-blood"><option value="">—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">Father's Name</label><input class="form-input" id="f-father"/></div>
+          <div class="form-field"><label class="form-label">Mother's Name</label><input class="form-input" id="f-mother"/></div>
+        </div>
+        <div class="form-field"><label class="form-label">Address</label><textarea class="form-textarea" id="f-address">Dubai, UAE</textarea></div>
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">Phone</label><input class="form-input" id="f-phone" type="tel"/></div>
+          <div class="form-field"><label class="form-label">Bus Number</label><input class="form-input" id="f-bus"/></div>
+        </div>
+        <div class="form-field"><label class="form-label">Class Teacher</label><input class="form-input" id="f-teacher"/></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('s-home')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveProfile()">Save Profile</button>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <a href="admin.html" style="font-size:12px;color:var(--s400);text-decoration:none;font-weight:600">⚙️ Admin Panel</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: TIMETABLE
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-timetable">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <button class="app-bar-back" onclick="go('s-home')">←</button>
+      <div class="app-bar-content"><div class="app-bar-title">Timetable</div></div>
+      <div class="app-bar-actions">
+        <button class="icon-btn" onclick="openAddPeriod()">＋</button>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="day-tabs" id="day-tabs">
+      <button class="day-tab" data-d="0" onclick="selectDay(0,this)">Mon</button>
+      <button class="day-tab" data-d="1" onclick="selectDay(1,this)">Tue</button>
+      <button class="day-tab" data-d="2" onclick="selectDay(2,this)">Wed</button>
+      <button class="day-tab" data-d="3" onclick="selectDay(3,this)">Thu</button>
+      <button class="day-tab" data-d="4" onclick="selectDay(4,this)">Fri</button>
+    </div>
+    <div id="tt-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: GRADES
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-grades">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <button class="app-bar-back" onclick="go('s-home')">←</button>
+      <div class="app-bar-content"><div class="app-bar-title">Grades</div></div>
+      <div class="app-bar-actions">
+        <button class="icon-btn" onclick="openGradeSheet()">＋</button>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div id="grades-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: HOMEWORK
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-homework">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <button class="app-bar-back" onclick="go('s-home')">←</button>
+      <div class="app-bar-content"><div class="app-bar-title">Homework</div></div>
+      <div class="app-bar-actions">
+        <button class="icon-btn" onclick="openHwSheet()">＋</button>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="filter-row">
+      <button class="f-chip on" onclick="setHwFilter('all',this)">All</button>
+      <button class="f-chip" onclick="setHwFilter('pending',this)">Pending</button>
+      <button class="f-chip" onclick="setHwFilter('progress',this)">In Progress</button>
+      <button class="f-chip" onclick="setHwFilter('finished',this)">Finished</button>
+    </div>
+    <div id="hw-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: TO DO
+══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-todo">
+  <div class="app-bar">
+    <div class="app-bar-inner">
+      <button class="app-bar-back" onclick="go('s-home')">←</button>
+      <div class="app-bar-content"><div class="app-bar-title">To Do</div></div>
+      <div class="app-bar-actions">
+        <button class="icon-btn" onclick="openTodoSheet()">＋</button>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="filter-row">
+      <button class="f-chip on" onclick="setTodoFilter('all',this)">All</button>
+      <button class="f-chip" onclick="setTodoFilter('pending',this)">Pending</button>
+      <button class="f-chip" onclick="setTodoFilter('done',this)">Done</button>
+    </div>
+    <div id="todo-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BOTTOM SHEETS
+══════════════════════════════════════════════════════════ -->
+
+<!-- Period Sheet -->
+<div class="sheet-overlay" id="sh-period">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sh-period-title">Add Period</div>
+    <input type="hidden" id="sh-period-day"/>
+    <input type="hidden" id="sh-period-idx" value="-1"/>
+    <div class="form-field"><label class="form-label">Subject</label><input class="form-input" id="sp-subject" placeholder="e.g. Mathematics"/></div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Start Time</label><input class="form-input" id="sp-start" type="time" value="08:00"/></div>
+      <div class="form-field"><label class="form-label">End Time</label><input class="form-input" id="sp-end" type="time" value="08:45"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Icon (emoji)</label><input class="form-input" id="sp-icon" placeholder="📚" maxlength="4"/></div>
+      <div class="form-field"><label class="form-label">Type</label>
+        <select class="form-select" id="sp-type">
+          <option value="class">Class</option>
+          <option value="break">Break / Lunch</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeSheet('sh-period')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="savePeriod()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Grade Sheet -->
+<div class="sheet-overlay" id="sh-grade">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sh-grade-title">Add Subject</div>
+    <input type="hidden" id="sg-idx" value="-1"/>
+    <div class="form-field"><label class="form-label">Subject Name</label><input class="form-input" id="sg-subject" placeholder="e.g. Mathematics"/></div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Score</label><input class="form-input" id="sg-score" type="number" min="0" max="100" placeholder="0"/></div>
+      <div class="form-field"><label class="form-label">Out of</label><input class="form-input" id="sg-max" type="number" min="1" value="100"/></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeSheet('sh-grade')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveGrade()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Homework Sheet -->
+<div class="sheet-overlay" id="sh-hw">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Homework</div>
+    <div class="form-field"><label class="form-label">Subject</label><input class="form-input" id="mh-subject" placeholder="e.g. Mathematics"/></div>
+    <div class="form-field"><label class="form-label">Description</label><textarea class="form-textarea" id="mh-desc" placeholder="What needs to be done..."></textarea></div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Due Date</label><input class="form-input" id="mh-due" type="date"/></div>
+      <div class="form-field"><label class="form-label">Status</label>
+        <select class="form-select" id="mh-status">
+          <option value="pending">Pending</option>
+          <option value="progress">In Progress</option>
+          <option value="finished">Finished</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeSheet('sh-hw')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveHw()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Todo Sheet -->
+<div class="sheet-overlay" id="sh-todo">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Task</div>
+    <div class="form-field"><label class="form-label">Task Name</label><input class="form-input" id="mt-name" placeholder="What do you need to do?"/></div>
+    <div class="form-field"><label class="form-label">Description (optional)</label><textarea class="form-textarea" id="mt-desc" placeholder="Any details..."></textarea></div>
+    <div class="form-field"><label class="form-label">Deadline</label><input class="form-input" id="mt-dead" type="date"/></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeSheet('sh-todo')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveTodo()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════════════════ */
+const DB={
+  get(k){try{return JSON.parse(localStorage.getItem('rs_'+k))}catch{return null}},
+  set(k,v){localStorage.setItem('rs_'+k,JSON.stringify(v))},
+  def(k,v){if(DB.get(k)===null)DB.set(k,v)}
+};
+
+/* ── SEED DEFAULT TIMETABLE ── */
+// Structured CBSE Grade 2 timetable — consistent, realistic
+const defaultTT={
+  0:[ // Monday
+    {subject:'Morning Assembly',time:'7:45–8:00', icon:'🙏',type:'break'},
+    {subject:'English',         time:'8:00–8:45', icon:'📖',type:'class',color:'#4F46E5'},
+    {subject:'Mathematics',     time:'8:45–9:30', icon:'🔢',type:'class',color:'#F43F5E'},
+    {subject:'Hindi',           time:'9:30–10:15',icon:'🇮🇳',type:'class',color:'#10B981'},
+    {subject:'Break',           time:'10:15–10:30',icon:'☕',type:'break'},
+    {subject:'Environmental Science',time:'10:30–11:15',icon:'🌿',type:'class',color:'#0EA5E9'},
+    {subject:'Art & Craft',     time:'11:15–12:00',icon:'🎨',type:'class',color:'#8B5CF6'},
+    {subject:'Lunch',           time:'12:00–12:30',icon:'🍱',type:'break'},
+    {subject:'Physical Education',time:'12:30–1:15',icon:'⚽',type:'class',color:'#F59E0B'},
+    {subject:'Library',         time:'1:15–2:00', icon:'📚',type:'class',color:'#64748B'},
+  ],
+  1:[ // Tuesday
+    {subject:'Morning Assembly',time:'7:45–8:00', icon:'🙏',type:'break'},
+    {subject:'Mathematics',     time:'8:00–8:45', icon:'🔢',type:'class',color:'#F43F5E'},
+    {subject:'English',         time:'8:45–9:30', icon:'📖',type:'class',color:'#4F46E5'},
+    {subject:'Computer Science',time:'9:30–10:15',icon:'💻',type:'class',color:'#7C3AED'},
+    {subject:'Break',           time:'10:15–10:30',icon:'☕',type:'break'},
+    {subject:'Hindi',           time:'10:30–11:15',icon:'🇮🇳',type:'class',color:'#10B981'},
+    {subject:'Moral Science',   time:'11:15–12:00',icon:'🌟',type:'class',color:'#F97316'},
+    {subject:'Lunch',           time:'12:00–12:30',icon:'🍱',type:'break'},
+    {subject:'Environmental Science',time:'12:30–1:15',icon:'🌿',type:'class',color:'#0EA5E9'},
+    {subject:'Music',           time:'1:15–2:00', icon:'🎵',type:'class',color:'#EC4899'},
+  ],
+  2:[ // Wednesday
+    {subject:'Morning Assembly',time:'7:45–8:00', icon:'🙏',type:'break'},
+    {subject:'Hindi',           time:'8:00–8:45', icon:'🇮🇳',type:'class',color:'#10B981'},
+    {subject:'English',         time:'8:45–9:30', icon:'📖',type:'class',color:'#4F46E5'},
+    {subject:'Mathematics',     time:'9:30–10:15',icon:'🔢',type:'class',color:'#F43F5E'},
+    {subject:'Break',           time:'10:15–10:30',icon:'☕',type:'break'},
+    {subject:'Art & Craft',     time:'10:30–11:15',icon:'🎨',type:'class',color:'#8B5CF6'},
+    {subject:'Environmental Science',time:'11:15–12:00',icon:'🌿',type:'class',color:'#0EA5E9'},
+    {subject:'Lunch',           time:'12:00–12:30',icon:'🍱',type:'break'},
+    {subject:'Computer Science',time:'12:30–1:15',icon:'💻',type:'class',color:'#7C3AED'},
+    {subject:'Physical Education',time:'1:15–2:00',icon:'⚽',type:'class',color:'#F59E0B'},
+  ],
+  3:[ // Thursday
+    {subject:'Morning Assembly',time:'7:45–8:00', icon:'🙏',type:'break'},
+    {subject:'Environmental Science',time:'8:00–8:45',icon:'🌿',type:'class',color:'#0EA5E9'},
+    {subject:'Mathematics',     time:'8:45–9:30', icon:'🔢',type:'class',color:'#F43F5E'},
+    {subject:'English',         time:'9:30–10:15',icon:'📖',type:'class',color:'#4F46E5'},
+    {subject:'Break',           time:'10:15–10:30',icon:'☕',type:'break'},
+    {subject:'Hindi',           time:'10:30–11:15',icon:'🇮🇳',type:'class',color:'#10B981'},
+    {subject:'Music',           time:'11:15–12:00',icon:'🎵',type:'class',color:'#EC4899'},
+    {subject:'Lunch',           time:'12:00–12:30',icon:'🍱',type:'break'},
+    {subject:'Moral Science',   time:'12:30–1:15',icon:'🌟',type:'class',color:'#F97316'},
+    {subject:'Library',         time:'1:15–2:00', icon:'📚',type:'class',color:'#64748B'},
+  ],
+  4:[ // Friday
+    {subject:'Morning Assembly',time:'7:45–8:00', icon:'🙏',type:'break'},
+    {subject:'English',         time:'8:00–8:45', icon:'📖',type:'class',color:'#4F46E5'},
+    {subject:'Hindi',           time:'8:45–9:30', icon:'🇮🇳',type:'class',color:'#10B981'},
+    {subject:'Environmental Science',time:'9:30–10:15',icon:'🌿',type:'class',color:'#0EA5E9'},
+    {subject:'Break',           time:'10:15–10:30',icon:'☕',type:'break'},
+    {subject:'Mathematics',     time:'10:30–11:15',icon:'🔢',type:'class',color:'#F43F5E'},
+    {subject:'Art & Craft',     time:'11:15–12:00',icon:'🎨',type:'class',color:'#8B5CF6'},
+    {subject:'Lunch',           time:'12:00–12:30',icon:'🍱',type:'break'},
+    {subject:'Physical Education',time:'12:30–1:15',icon:'⚽',type:'class',color:'#F59E0B'},
+    {subject:'Computer Science',time:'1:15–2:00', icon:'💻',type:'class',color:'#7C3AED'},
+  ]
+};
+
+DB.def('timetable', defaultTT);
+DB.def('grades',[
+  {subject:'English',          score:88, max:100},
+  {subject:'Mathematics',      score:92, max:100},
+  {subject:'Environmental Sc.',score:85, max:100},
+  {subject:'Hindi',            score:78, max:100},
+  {subject:'Computer Science', score:90, max:100},
+]);
+DB.def('homework',[]);
+DB.def('todos',[]);
+DB.def('profile',{name:'Rishan Sreejith',grade:'Grade 2',father:'',mother:'',address:'Dubai, UAE',phone:'',bus:'',teacher:'',blood:'',pic:''});
+
+/* ══════════════════════════════════════════════════════════
+   ROUTING — single-page screen swap
+══════════════════════════════════════════════════════════ */
+let currentScreen='s-home', ttDay=-1, hwFilter='all', todoFilter='all';
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen=id;
+  window.scrollTo(0,0);
+  if(id==='s-home')      renderHome();
+  if(id==='s-profile')   renderProfile();
+  if(id==='s-timetable') renderTimetable();
+  if(id==='s-grades')    renderGrades();
+  if(id==='s-homework')  renderHw();
+  if(id==='s-todo')      renderTodo();
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER SYNC
+══════════════════════════════════════════════════════════ */
+function syncHeader(){
+  const p=DB.get('profile')||{};
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning ☀️':h<17?'Good afternoon 🌤':h<20?'Good evening 🌅':'Good night 🌙';
+  document.getElementById('h-greeting').textContent=greet;
+  document.getElementById('h-name').textContent=p.name||'Rishan Sreejith';
+  document.getElementById('h-grade').textContent=p.grade||'Grade 2';
+  const img=document.getElementById('h-av-img');
+  const fb =document.getElementById('h-av-fallback');
+  if(p.pic){img.src=p.pic;img.style.display='block';fb.style.display='none'}
+  else{img.style.display='none';fb.style.display='block'}
+}
+
+/* ══════════════════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════════════════ */
+const QUOTES=[
+  '"Every expert was once a beginner. Keep going! 🚀"',
+  '"Be curious, be kind, be awesome! 🌟"',
+  '"You are braver than you believe! 💪"',
+  '"Small steps every day lead to big achievements!"',
+  '"Learning is the greatest adventure! 📚"',
+  '"Mistakes help us grow. Try again, superstar! ⭐"',
+  '"Believe in yourself and you\'re halfway there! 🎯"',
+];
+function renderHome(){
+  syncHeader();
+  const dayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const todayJS=new Date().getDay(); // 0=Sun
+  const todayIdx=todayJS-1;          // 0=Mon
+  const todayName=dayNames[todayJS-1]||'Weekend';
+  document.getElementById('today-day-name').textContent=todayName;
+  document.getElementById('today-label').textContent=todayName;
+  document.getElementById('home-quote').textContent=QUOTES[new Date().getDay()%QUOTES.length];
+
+  // badge counts
+  const grades=(DB.get('grades')||[]).length;
+  const hwPending=(DB.get('homework')||[]).filter(h=>h.status!=='finished').length;
+  const todoPending=(DB.get('todos')||[]).filter(t=>!t.done).length;
+  setBadge('mc-grades',grades);
+  setBadge('mc-hw',hwPending);
+  setBadge('mc-todo',todoPending);
+
+  // today classes
+  const el=document.getElementById('home-today');
+  if(todayIdx>=0&&todayIdx<=4){
+    const tt=DB.get('timetable')||{};
+    const slots=(tt[todayIdx]||[]).filter(p=>p.type==='class');
+    if(slots.length){
+      el.innerHTML=slots.slice(0,5).map(s=>`
+        <div class="today-slot">
+          <div class="ts-dot" style="background:${s.color||'#94A3B8'}"></div>
+          <div class="ts-time">${s.time.split('–')[0]||'—'}</div>
+          <div class="ts-sub">${s.subject}</div>
+          <div class="ts-icon">${s.icon||'📚'}</div>
+        </div>`).join('');
+    } else el.innerHTML=`<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No classes today</div></div>`;
+  } else {
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">Weekend! Relax and recharge.</div></div>`;
+  }
+}
+function setBadge(id,n){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=n;
+  el.classList.toggle('show',n>0);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════════════════════ */
+function renderProfile(){
+  const p=DB.get('profile')||{};
+  document.getElementById('f-name').value   =p.name||'Rishan Sreejith';
+  document.getElementById('f-grade').value  =p.grade||'Grade 2';
+  document.getElementById('f-father').value =p.father||'';
+  document.getElementById('f-mother').value =p.mother||'';
+  document.getElementById('f-address').value=p.address||'Dubai, UAE';
+  document.getElementById('f-phone').value  =p.phone||'';
+  document.getElementById('f-bus').value    =p.bus||'';
+  document.getElementById('f-teacher').value=p.teacher||'';
+  document.getElementById('f-blood').value  =p.blood||'';
+  document.getElementById('pp-name').textContent =(p.name||'Rishan Sreejith');
+  document.getElementById('pp-grade').textContent=(p.grade||'Grade 2')+' · GEMS Our Own Boys High School';
+  const img=document.getElementById('pp-img');
+  const fb =document.getElementById('pp-fallback');
+  if(p.pic){img.src=p.pic;img.style.display='block';fb.style.display='none'}
+  else{img.style.display='none';fb.style.display='block'}
+}
+function saveProfile(){
+  const p=DB.get('profile')||{};
+  p.name   =document.getElementById('f-name').value.trim()||'Rishan Sreejith';
+  p.grade  =document.getElementById('f-grade').value.trim()||'Grade 2';
+  p.father =document.getElementById('f-father').value.trim();
+  p.mother =document.getElementById('f-mother').value.trim();
+  p.address=document.getElementById('f-address').value.trim();
+  p.phone  =document.getElementById('f-phone').value.trim();
+  p.bus    =document.getElementById('f-bus').value.trim();
+  p.teacher=document.getElementById('f-teacher').value.trim();
+  p.blood  =document.getElementById('f-blood').value;
+  DB.set('profile',p);
+  toast('✅ Profile saved!');
+  setTimeout(()=>go('s-home'),600);
+}
+function onPicUpload(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const p=DB.get('profile')||{};
+    p.pic=ev.target.result;
+    DB.set('profile',p);
+    syncHeader();renderProfile();
+    toast('📸 Photo updated!');
+  };
+  r.readAsDataURL(f);
+}
+
+/* ══════════════════════════════════════════════════════════
+   TIMETABLE
+══════════════════════════════════════════════════════════ */
+const PERIOD_COLORS=['#4F46E5','#F43F5E','#10B981','#F59E0B','#0EA5E9','#8B5CF6','#EC4899','#F97316','#14B8A6','#64748B'];
+const SUBJECT_ICONS={
+  'English':'📖','Mathematics':'🔢','Hindi':'🇮🇳','Science':'🔬',
+  'Environmental Science':'🌿','Environmental Sc.':'🌿',
+  'Computer Science':'💻','Computer':'💻','Art':'🎨','Art & Craft':'🎨',
+  'Physical Education':'⚽','P.E.':'⚽','Music':'🎵','Library':'📚',
+  'Moral Science':'🌟','Social Studies':'🌍','Break':'☕','Lunch':'🍱',
+  'Morning Assembly':'🙏'
+};
+
+function renderTimetable(){
+  if(ttDay===-1){const t=new Date().getDay()-1;ttDay=t>=0&&t<=4?t:0;}
+  document.querySelectorAll('.day-tab').forEach(b=>{
+    const d=parseInt(b.dataset.d);
+    b.classList.remove('on','today-mark');
+    if(d===new Date().getDay()-1)b.classList.add('today-mark');
+    if(d===ttDay)b.classList.add('on');
+  });
+  renderPeriods();
+}
+function selectDay(d,btn){
+  ttDay=d;
+  document.querySelectorAll('.day-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderPeriods();
+}
+function renderPeriods(){
+  const tt=DB.get('timetable')||{};
+  const periods=(tt[ttDay]||[]);
+  const el=document.getElementById('tt-list');
+  if(!periods.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No periods yet. Tap + to add.</div></div>`;
+    return;
+  }
+  el.innerHTML=periods.map((p,i)=>{
+    const isBreak=p.type==='break';
+    const color=isBreak?'#94A3B8':(p.color||PERIOD_COLORS[i%PERIOD_COLORS.length]);
+    const numLabel=isBreak?'·':(periods.slice(0,i).filter(x=>x.type==='class').length+1);
+    return `<div class="period-card" style="border-left:3px solid ${color}">
+      <div class="period-num" style="background:${isBreak?'#F1F5F9':'transparent'};color:${isBreak?'#94A3B8':color};border:2px solid ${isBreak?'#E2E8F0':color}">${numLabel}</div>
+      <div class="period-body">
+        <div class="period-subject" style="color:${isBreak?'var(--s400)':'var(--s800)'}">${p.subject}</div>
+        <div class="period-time">🕐 ${p.time}</div>
+      </div>
+      <div class="period-icon-el">${p.icon||'📚'}</div>
+      <div class="period-actions">
+        <button class="act-btn act-edit" onclick="editPeriod(${i})">✏️</button>
+        <button class="act-btn act-del"  onclick="delPeriod(${i})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openAddPeriod(){
+  document.getElementById('sh-period-title').textContent='Add Period';
+  document.getElementById('sh-period-idx').value=-1;
+  document.getElementById('sh-period-day').value=ttDay;
+  document.getElementById('sp-subject').value='';
+  document.getElementById('sp-icon').value='';
+  document.getElementById('sp-start').value='08:00';
+  document.getElementById('sp-end').value='08:45';
+  document.getElementById('sp-type').value='class';
+  openSheet('sh-period');
+}
+function editPeriod(i){
+  const tt=DB.get('timetable')||{};
+  const p=(tt[ttDay]||[])[i];
+  if(!p)return;
+  document.getElementById('sh-period-title').textContent='Edit Period';
+  document.getElementById('sh-period-idx').value=i;
+  document.getElementById('sh-period-day').value=ttDay;
+  document.getElementById('sp-subject').value=p.subject;
+  const times=p.time.split('–');
+  document.getElementById('sp-start').value=to24(times[0]?.trim()||'08:00');
+  document.getElementById('sp-end').value=to24(times[1]?.trim()||'08:45');
+  document.getElementById('sp-icon').value=p.icon||'';
+  document.getElementById('sp-type').value=p.type||'class';
+  openSheet('sh-period');
+}
+function to24(t){
+  if(!t)return'08:00';
+  if(t.includes(':'))return t.length===5?t:t.padStart(5,'0');
+  return'08:00';
+}
+function savePeriod(){
+  const subject=document.getElementById('sp-subject').value.trim();
+  if(!subject){toast('⚠️ Enter subject');return;}
+  const start=document.getElementById('sp-start').value;
+  const end  =document.getElementById('sp-end').value;
+  const icon =document.getElementById('sp-icon').value.trim()||SUBJECT_ICONS[subject]||'📚';
+  const type =document.getElementById('sp-type').value;
+  const d    =parseInt(document.getElementById('sh-period-day').value);
+  const idx  =parseInt(document.getElementById('sh-period-idx').value);
+  const color=type==='break'?'#94A3B8':(PERIOD_COLORS[Math.floor(Math.random()*PERIOD_COLORS.length)]);
+  const entry={subject,time:`${start}–${end}`,icon,type,color};
+  const tt=DB.get('timetable')||{0:[],1:[],2:[],3:[],4:[]};
+  if(!tt[d])tt[d]=[];
+  if(idx>=0)tt[d][idx]=entry;
+  else tt[d].push(entry);
+  DB.set('timetable',tt);
+  closeSheet('sh-period');
+  renderPeriods();
+  toast('✅ Period saved!');
+}
+function delPeriod(i){
+  const tt=DB.get('timetable')||{};
+  (tt[ttDay]||[]).splice(i,1);
+  DB.set('timetable',tt);
+  renderPeriods();
+  toast('🗑 Period removed');
+}
+
+/* ══════════════════════════════════════════════════════════
+   GRADES
+══════════════════════════════════════════════════════════ */
+function gradeInfo(score,max){
+  const pct=Math.round(score/max*100);
+  if(pct>=90)return{letter:'A+',color:'#10B981',fill:'#10B981'};
+  if(pct>=80)return{letter:'A', color:'#4F46E5',fill:'#4F46E5'};
+  if(pct>=70)return{letter:'B+',color:'#0EA5E9',fill:'#0EA5E9'};
+  if(pct>=60)return{letter:'B', color:'#F59E0B',fill:'#F59E0B'};
+  if(pct>=50)return{letter:'C', color:'#F97316',fill:'#F97316'};
+  return{letter:'D',color:'#F43F5E',fill:'#F43F5E'};
+}
+function renderGrades(){
+  const grades=DB.get('grades')||[];
+  const el=document.getElementById('grades-list');
+  if(!grades.length){
+    el.innerHTML=`<div class="card card-pad"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No subjects yet. Tap + to add.</div></div></div>`;
+    return;
+  }
+  // Overall summary card
+  const avg=grades.reduce((a,g)=>a+g.score/g.max*100,0)/grades.length;
+  const {letter,color}=gradeInfo(avg,100);
+  el.innerHTML=`
+    <div class="card mb12">
+      <div class="card-pad" style="display:flex;align-items:center;gap:16px">
+        <div style="flex:1">
+          <div class="t-xs w7 muted mb8" style="text-transform:uppercase;letter-spacing:1px">Overall Performance</div>
+          <div class="t-2xl w9" style="color:${color}">${letter}</div>
+          <div class="t-sm muted mt8">${Math.round(avg)}% average across ${grades.length} subjects</div>
+        </div>
+        <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,${color},${color}88);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff">${letter}</div>
+      </div>
+    </div>
+    <div class="card">
+      ${grades.map((g,i)=>{
+        const pct=Math.round(g.score/g.max*100);
+        const gi=gradeInfo(g.score,g.max);
+        return`<div class="grade-row">
+          <div class="grade-badge" style="background:${PERIOD_COLORS[i%PERIOD_COLORS.length]}">${SUBJECT_ICONS[g.subject]||'📚'}</div>
+          <div class="grade-info">
+            <div class="grade-name">${g.subject}</div>
+            <div class="grade-score">${g.score}/${g.max} · ${pct}%</div>
+            <div class="grade-bar"><div class="grade-fill" style="width:${pct}%;background:${gi.fill}"></div></div>
+          </div>
+          <div class="grade-letter" style="color:${gi.color}">${gi.letter}</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button class="act-btn act-edit" onclick="editGrade(${i})">✏️</button>
+            <button class="act-btn act-del"  onclick="delGrade(${i})">🗑</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  // animate bars after render
+  setTimeout(()=>{
+    document.querySelectorAll('.grade-fill').forEach(b=>{const w=b.style.width;b.style.width='0';requestAnimationFrame(()=>{b.style.width=w});});
+  },80);
+}
+function openGradeSheet(idx=-1){
+  document.getElementById('sg-idx').value=idx;
+  if(idx>=0){
+    const g=(DB.get('grades')||[])[idx];
+    document.getElementById('sh-grade-title').textContent='Edit Subject';
+    document.getElementById('sg-subject').value=g.subject;
+    document.getElementById('sg-score').value=g.score;
+    document.getElementById('sg-max').value=g.max;
+  } else {
+    document.getElementById('sh-grade-title').textContent='Add Subject';
+    document.getElementById('sg-subject').value='';
+    document.getElementById('sg-score').value='';
+    document.getElementById('sg-max').value='100';
+  }
+  openSheet('sh-grade');
+}
+function editGrade(i){openGradeSheet(i);}
+function saveGrade(){
+  const subj=document.getElementById('sg-subject').value.trim();
+  if(!subj){toast('⚠️ Enter subject name');return;}
+  const score=parseFloat(document.getElementById('sg-score').value)||0;
+  const max  =parseFloat(document.getElementById('sg-max').value)||100;
+  const grades=DB.get('grades')||[];
+  const idx=parseInt(document.getElementById('sg-idx').value);
+  if(idx>=0)grades[idx]={subject:subj,score,max};
+  else grades.push({subject:subj,score,max});
+  DB.set('grades',grades);
+  closeSheet('sh-grade');
+  renderGrades();
+  toast('✅ Grade saved!');
+}
+function delGrade(i){
+  if(!confirm('Delete this subject?'))return;
+  const grades=DB.get('grades')||[];
+  grades.splice(i,1);DB.set('grades',grades);renderGrades();
+  toast('🗑 Deleted');
+}
+
+/* ══════════════════════════════════════════════════════════
+   HOMEWORK
+══════════════════════════════════════════════════════════ */
+const STATUS={
+  pending: {label:'Pending',   bg:'#FFF1F2',color:'#BE123C',next:'progress',nextLabel:'Start →'},
+  progress:{label:'In Progress',bg:'#FFFBEB',color:'#B45309',next:'finished',nextLabel:'Mark Done ✓'},
+  finished:{label:'Done ✓',   bg:'#ECFDF5',color:'#047857',next:null}
+};
+function renderHw(){
+  const all=DB.get('homework')||[];
+  const list=hwFilter==='all'?all:all.filter(h=>h.status===hwFilter);
+  const el=document.getElementById('hw-list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">${hwFilter==='finished'?'🎉':'📝'}</div><div class="empty-text">${hwFilter==='all'?'No homework yet. Tap + to add.':hwFilter==='finished'?'Nothing finished yet.':'All clear here!'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(h=>{
+    const ri=all.indexOf(h);
+    const s=STATUS[h.status]||STATUS.pending;
+    return`<div class="hw-card s-${h.status}">
+      <div class="hw-inner">
+        <div class="hw-top">
+          <div class="hw-subject">${h.subject}</div>
+          <span class="hw-pill" style="background:${s.bg};color:${s.color}">${s.label}</span>
+        </div>
+        ${h.desc?`<div class="hw-desc">${h.desc}</div>`:''}
+        <div class="hw-footer">
+          ${h.due?`<span class="hw-due">📅 ${fmtDate(h.due)}</span>`:''}
+          ${s.next?`<button class="hw-advance" style="background:${STATUS[s.next].bg};color:${STATUS[s.next].color}" onclick="advHw(${ri})">${s.nextLabel}</button>`:''}
+          <button class="hw-del-btn" onclick="delHw(${ri})">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function fmtDate(d){
+  if(!d)return'';
+  try{const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}catch{return d}
+}
+function advHw(i){
+  const hw=DB.get('homework')||[];
+  const s=STATUS[hw[i].status];
+  if(s.next){hw[i].status=s.next;DB.set('homework',hw);renderHw();}
+}
+function delHw(i){
+  const hw=DB.get('homework')||[];
+  hw.splice(i,1);DB.set('homework',hw);renderHw();toast('🗑 Removed');
+}
+function openHwSheet(){
+  document.getElementById('mh-subject').value='';
+  document.getElementById('mh-desc').value='';
+  document.getElementById('mh-due').value=todayISO();
+  document.getElementById('mh-status').value='pending';
+  openSheet('sh-hw');
+}
+function saveHw(){
+  const subj=document.getElementById('mh-subject').value.trim();
+  if(!subj){toast('⚠️ Enter subject');return;}
+  const hw=DB.get('homework')||[];
+  hw.unshift({subject:subj,desc:document.getElementById('mh-desc').value.trim(),due:document.getElementById('mh-due').value,status:document.getElementById('mh-status').value});
+  DB.set('homework',hw);
+  closeSheet('sh-hw');renderHw();toast('✅ Homework added!');
+}
+function setHwFilter(f,btn){
+  hwFilter=f;
+  document.querySelectorAll('#s-homework .f-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');renderHw();
+}
+
+/* ══════════════════════════════════════════════════════════
+   TODO
+══════════════════════════════════════════════════════════ */
+function renderTodo(){
+  const all=DB.get('todos')||[];
+  const list=todoFilter==='all'?all:all.filter(t=>todoFilter==='done'?t.done:!t.done);
+  const el=document.getElementById('todo-list');
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">${todoFilter==='done'?'⭐':'✅'}</div><div class="empty-text">${todoFilter==='all'?'No tasks yet. Tap + to add.':todoFilter==='done'?'Nothing done yet.':'All tasks complete!'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(t=>{
+    const ri=all.indexOf(t);
+    return`<div class="todo-item">
+      <div class="todo-check ${t.done?'done':''}" onclick="toggleTodo(${ri})">${t.done?'✓':''}</div>
+      <div class="todo-body">
+        <div class="todo-name ${t.done?'done':''}">${t.name}</div>
+        ${t.desc?`<div class="todo-desc">${t.desc}</div>`:''}
+        ${t.dead?`<div class="todo-dead">🗓 ${fmtDate(t.dead)}</div>`:''}
+      </div>
+      <button class="todo-del" onclick="delTodo(${ri})">✕</button>
+    </div>`;
+  }).join('');
+}
+function toggleTodo(i){
+  const t=DB.get('todos')||[];
+  t[i].done=!t[i].done;DB.set('todos',t);renderTodo();
+}
+function delTodo(i){
+  const t=DB.get('todos')||[];
+  t.splice(i,1);DB.set('todos',t);renderTodo();toast('🗑 Removed');
+}
+function openTodoSheet(){
+  document.getElementById('mt-name').value='';
+  document.getElementById('mt-desc').value='';
+  document.getElementById('mt-dead').value='';
+  openSheet('sh-todo');
+}
+function saveTodo(){
+  const name=document.getElementById('mt-name').value.trim();
+  if(!name){toast('⚠️ Enter task name');return;}
+  const todos=DB.get('todos')||[];
+  todos.unshift({name,desc:document.getElementById('mt-desc').value.trim(),dead:document.getElementById('mt-dead').value,done:false});
+  DB.set('todos',todos);
+  closeSheet('sh-todo');renderTodo();toast('✅ Task added!');
+}
+function setTodoFilter(f,btn){
+  todoFilter=f;
+  document.querySelectorAll('#s-todo .f-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');renderTodo();
+}
+
+/* ══════════════════════════════════════════════════════════
+   SHEETS
+══════════════════════════════════════════════════════════ */
+function openSheet(id){document.getElementById(id).classList.add('open');}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.sheet-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')});
+});
+
+/* ══════════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════════ */
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════ */
+function todayISO(){const d=new Date();return d.toISOString().split('T')[0]}
+
+/* ══════════════════════════════════════════════════════════
+   SERVICE WORKER
+══════════════════════════════════════════════════════════ */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+syncHeader();
+renderHome();
+</script>
+</body>
+</html>
