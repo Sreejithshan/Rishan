@@ -1,98 +1,74 @@
-// ═══════════════════════════════════════════════════════════
-// FinMob — Production Service Worker
-// GitHub Pages: https://sreejithshan.github.io/Expense/
-// ═══════════════════════════════════════════════════════════
-
-const BASE        = '/Expense/';
-const SHELL_CACHE = 'finmob-shell-v5';
-const DATA_CACHE  = 'finmob-data-v5';
-
-// App shell — cached immediately on install
-const SHELL_FILES = [
-  BASE,
-  BASE + 'index.html',
-  BASE + 'manifest.json',
-  BASE + 'sw.js',
+// ── Bump this version whenever you push new files ──
+const VERSION = 'rishan-v6';
+const ASSETS = [
+  './',
+  './index.html',
+  './admin.html',
+  './manifest.json',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-128.png',
+  './icons/icon-144.png',
+  './icons/icon-152.png',
+  './icons/icon-192.png',
+  './icons/icon-384.png',
+  './icons/icon-512.png'
 ];
 
-// ── INSTALL: cache app shell ──────────────────────────────
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then(cache => cache.addAll(SHELL_FILES))
-      .then(() => self.skipWaiting())   // activate immediately
-      .catch(err => console.warn('SW install error:', err))
+// Install: pre-cache everything immediately
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(VERSION)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting()) // activate without waiting
   );
 });
 
-// ── ACTIVATE: delete old caches ──────────────────────────
-self.addEventListener('activate', e => {
-  e.waitUntil(
+// Activate: clear old caches, claim all clients immediately
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys
-          .filter(k => k !== SHELL_CACHE && k !== DATA_CACHE)
-          .map(k => caches.delete(k))
+        keys.filter(k => k !== VERSION).map(k => caches.delete(k))
       ))
-      .then(() => self.clients.claim())  // take control of all tabs
+      .then(() => self.clients.claim()) // take control of all open tabs
   );
 });
 
-// ── FETCH: smart caching strategy ────────────────────────
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  const url = new URL(req.url);
+// Fetch: cache-first for app files, network-first for everything else
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
-  // Only handle GET requests from our own origin
-  if (req.method !== 'GET') return;
-  if (url.origin !== location.origin) return;
+  const url = new URL(event.request.url);
 
-  // ── JSON data files: Network-first ──
-  if (url.pathname.endsWith('.json') && !url.pathname.endsWith('manifest.json')) {
-    e.respondWith(networkFirst(req, DATA_CACHE));
-    return;
+  // Same-origin app files → cache first
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) {
+          // Serve from cache, update in background
+          fetch(event.request).then(fresh => {
+            if (fresh && fresh.status === 200) {
+              caches.open(VERSION).then(c => c.put(event.request, fresh.clone()));
+            }
+          }).catch(() => {});
+          return cached;
+        }
+        // Not cached — fetch and cache
+        return fetch(event.request).then(resp => {
+          if (resp && resp.status === 200) {
+            const clone = resp.clone();
+            caches.open(VERSION).then(c => c.put(event.request, clone));
+          }
+          return resp;
+        }).catch(() => caches.match('./index.html'));
+      })
+    );
   }
-
-  // ── App shell (HTML, JS, CSS): Stale-while-revalidate ──
-  // Serve from cache instantly (fast), update cache in background
-  e.respondWith(staleWhileRevalidate(req));
+  // Cross-origin → network only
 });
 
-// ── STRATEGY: Stale-while-revalidate ─────────────────────
-async function staleWhileRevalidate(req) {
-  const cache  = await caches.open(SHELL_CACHE);
-  const cached = await cache.match(req);
-
-  // Fetch from network in background to keep cache fresh
-  const fetchPromise = fetch(req)
-    .then(resp => {
-      if (resp && resp.status === 200) {
-        cache.put(req, resp.clone());
-      }
-      return resp;
-    })
-    .catch(() => null);
-
-  // Return cached immediately, or wait for network if not cached
-  return cached || fetchPromise || fallback();
-}
-
-// ── STRATEGY: Network-first with cache fallback ───────────
-async function networkFirst(req, cacheName) {
-  const cache = await caches.open(cacheName);
-  try {
-    const resp = await fetch(req, { cache: 'no-store' });
-    if (resp && resp.status === 200) {
-      cache.put(req, resp.clone());
-    }
-    return resp;
-  } catch {
-    return (await cache.match(req)) || fallback();
-  }
-}
-
-// ── FALLBACK: serve index.html when fully offline ─────────
-async function fallback() {
-  const cache = await caches.open(SHELL_CACHE);
-  return cache.match(BASE + 'index.html');
-}
+// Listen for messages from the page (e.g. force update)
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});

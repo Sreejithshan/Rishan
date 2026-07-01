@@ -1,19 +1,55 @@
 {
-  "name": "FinMob",
-  "short_name": "FinMob",
-  "description": "Your Personal Finance Manager",
+  "name": "Rishan's School App",
+  "short_name": "Rishan",
+  "description": "School companion for Rishan Sreejith, Grade 2, GEMS Our Own Boys High School",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/rishan-app/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#2c2640",
-  "theme_color": "#ff5f8f",
-  "start_url": "/Expense/",
-  "scope": "/Expense/",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#5B21B6",
+  "theme_color": "#5B21B6",
+  "orientation": "portrait-primary",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "edge_side_panel": { "preferred_width": 400 },
   "icons": [
+    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ff5f8f'/><text y='.9em' font-size='75' x='12'>💰</text></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home Screen"
+    }
+  ],
+  "categories": ["education", "kids"],
+  "shortcuts": [
+    {
+      "name": "Timetable",
+      "short_name": "Timetable",
+      "description": "View today's timetable",
+      "url": "./index.html",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Homework",
+      "short_name": "Homework",
+      "description": "Check homework",
+      "url": "./index.html",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ]
 }
