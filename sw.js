@@ -1,62 +1,98 @@
-const CACHE = 'rishan-v4';
-const FILES = [
-  './',
-  './index.html',
-  './admin.html',
-  './manifest.json',
-  './icons/icon-72.png',
-  './icons/icon-96.png',
-  './icons/icon-128.png',
-  './icons/icon-144.png',
-  './icons/icon-152.png',
-  './icons/icon-192.png',
-  './icons/icon-384.png',
-  './icons/icon-512.png'
+// ═══════════════════════════════════════════════════════════
+// FinMob — Production Service Worker
+// GitHub Pages: https://sreejithshan.github.io/Expense/
+// ═══════════════════════════════════════════════════════════
+
+const BASE        = '/Expense/';
+const SHELL_CACHE = 'finmob-shell-v5';
+const DATA_CACHE  = 'finmob-data-v5';
+
+// App shell — cached immediately on install
+const SHELL_FILES = [
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'sw.js',
 ];
 
-// Install: cache everything immediately
+// ── INSTALL: cache app shell ──────────────────────────────
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(cache => cache.addAll(FILES))
-      .then(() => self.skipWaiting())
+    caches.open(SHELL_CACHE)
+      .then(cache => cache.addAll(SHELL_FILES))
+      .then(() => self.skipWaiting())   // activate immediately
+      .catch(err => console.warn('SW install error:', err))
   );
 });
 
-// Activate: delete old caches, take control immediately
+// ── ACTIVATE: delete old caches ──────────────────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+        keys
+          .filter(k => k !== SHELL_CACHE && k !== DATA_CACHE)
+          .map(k => caches.delete(k))
       ))
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim())  // take control of all tabs
   );
 });
 
-// Fetch: cache-first — always serve from cache, update in background
+// ── FETCH: smart caching strategy ────────────────────────
 self.addEventListener('fetch', e => {
-  // Only handle GET requests
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  const url = new URL(req.url);
 
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) {
-        // Serve from cache instantly, refresh cache in background
-        fetch(e.request).then(fresh => {
-          if (fresh && fresh.status === 200) {
-            caches.open(CACHE).then(c => c.put(e.request, fresh));
-          }
-        }).catch(() => {});
-        return cached;
-      }
-      // Not in cache — try network, then cache it
-      return fetch(e.request).then(resp => {
-        if (!resp || resp.status !== 200) return resp;
-        const clone = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return resp;
-      }).catch(() => caches.match('./index.html'));
-    })
-  );
+  // Only handle GET requests from our own origin
+  if (req.method !== 'GET') return;
+  if (url.origin !== location.origin) return;
+
+  // ── JSON data files: Network-first ──
+  if (url.pathname.endsWith('.json') && !url.pathname.endsWith('manifest.json')) {
+    e.respondWith(networkFirst(req, DATA_CACHE));
+    return;
+  }
+
+  // ── App shell (HTML, JS, CSS): Stale-while-revalidate ──
+  // Serve from cache instantly (fast), update cache in background
+  e.respondWith(staleWhileRevalidate(req));
 });
+
+// ── STRATEGY: Stale-while-revalidate ─────────────────────
+async function staleWhileRevalidate(req) {
+  const cache  = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(req);
+
+  // Fetch from network in background to keep cache fresh
+  const fetchPromise = fetch(req)
+    .then(resp => {
+      if (resp && resp.status === 200) {
+        cache.put(req, resp.clone());
+      }
+      return resp;
+    })
+    .catch(() => null);
+
+  // Return cached immediately, or wait for network if not cached
+  return cached || fetchPromise || fallback();
+}
+
+// ── STRATEGY: Network-first with cache fallback ───────────
+async function networkFirst(req, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const resp = await fetch(req, { cache: 'no-store' });
+    if (resp && resp.status === 200) {
+      cache.put(req, resp.clone());
+    }
+    return resp;
+  } catch {
+    return (await cache.match(req)) || fallback();
+  }
+}
+
+// ── FALLBACK: serve index.html when fully offline ─────────
+async function fallback() {
+  const cache = await caches.open(SHELL_CACHE);
+  return cache.match(BASE + 'index.html');
+}
