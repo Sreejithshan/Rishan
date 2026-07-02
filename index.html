@@ -896,7 +896,7 @@ img{display:block;max-width:100%}
     <!-- TIMETABLE -->
     <div class="screen" id="s-tt">
       <div class="top-bar">
-        <div class="top-bar-spacer"></div>
+        <button class="top-bar-back" onclick="goTab(0)">‹</button>
         <div class="top-bar-title">Timetable</div>
         <button class="top-bar-action" onclick="openSheet('sh-period');resetPeriodSheet()">＋</button>
       </div>
@@ -915,7 +915,7 @@ img{display:block;max-width:100%}
     <!-- GRADES -->
     <div class="screen" id="s-grades">
       <div class="top-bar">
-        <div class="top-bar-spacer"></div>
+        <button class="top-bar-back" onclick="goTab(0)">‹</button>
         <div class="top-bar-title">Grades</div>
         <button class="top-bar-action" onclick="openGradeSheet(-1)">＋</button>
       </div>
@@ -925,7 +925,7 @@ img{display:block;max-width:100%}
     <!-- HOMEWORK -->
     <div class="screen" id="s-hw">
       <div class="top-bar">
-        <div class="top-bar-spacer"></div>
+        <button class="top-bar-back" onclick="goTab(0)">‹</button>
         <div class="top-bar-title">Homework</div>
         <button class="top-bar-action" onclick="openSheet('sh-hw');resetHwSheet()">＋</button>
       </div>
@@ -943,7 +943,7 @@ img{display:block;max-width:100%}
     <!-- TODO -->
     <div class="screen" id="s-todo">
       <div class="top-bar">
-        <div class="top-bar-spacer"></div>
+        <button class="top-bar-back" onclick="goTab(0)">‹</button>
         <div class="top-bar-title">To Do</div>
         <button class="top-bar-action" onclick="openSheet('sh-todo');resetTodoSheet()">＋</button>
       </div>
@@ -1616,12 +1616,42 @@ function fmtDate(d){
 }
 
 /* ════════════════════════════════════════════════
+   ANDROID HARDWARE BACK BUTTON
+════════════════════════════════════════════════ */
+// Push a history state so the back gesture has something to pop
+window.addEventListener('load', () => {
+  history.pushState({ screen: 'home' }, '');
+});
+window.addEventListener('popstate', (e) => {
+  // If a sheet is open, close it first
+  const openSheet = document.querySelector('.sheet-overlay.open');
+  if (openSheet) { openSheet.classList.remove('open'); history.pushState({screen:'sheet-closed'},''); return; }
+  // If a sub-screen is open, close it
+  const openSub = document.querySelector('.sub-screen.open');
+  if (openSub) { openSub.classList.remove('open'); history.pushState({screen:'sub-closed'},''); return; }
+  // If on a section screen (not home), go back to home
+  if (curTab !== 0) { goTab(0); history.pushState({ screen: 'home' }, ''); return; }
+  // Already on home — let the OS handle it (minimize)
+});
+
+/* ════════════════════════════════════════════════
    SERVICE WORKER
 ════════════════════════════════════════════════ */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js')
-      .then(r=>{r.update();})
+      .then(reg => {
+        // Tell any waiting SW to activate immediately
+        if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              sw.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+      })
       .catch(()=>{});
   });
 }
